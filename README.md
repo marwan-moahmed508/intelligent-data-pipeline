@@ -1,115 +1,121 @@
-# Intelligent Data Pipeline
+# Olist Brazilian E-Commerce Data Pipeline
 
-An end-to-end Data Engineering project that collects remote job data from a public API, transforms and validates the data, and loads it into PostgreSQL using a modular ETL pipeline.
+An end-to-end Data Engineering project built around the Brazilian E-Commerce Public Dataset by Olist.
+
+The project processes raw e-commerce data, performs data cleaning and transformation, loads the results into PostgreSQL, and provides analytical SQL views and an interactive Streamlit dashboard.
 
 ## Project Overview
 
-The **Intelligent Data Pipeline** automates the process of collecting and processing remote job listings.
+This project demonstrates a practical data engineering workflow using real-world e-commerce data.
 
-The pipeline extracts job data from the Remotive API, cleans and transforms the raw records, performs data quality checks, and stores the results in a PostgreSQL database.
-
-The project demonstrates practical Data Engineering concepts, including API integration, data transformation, validation, relational database management, and idempotent data loading.
+The pipeline covers:
+- Reading and processing multiple CSV datasets.
+- Cleaning and transforming raw data with Pandas.
+- Loading structured data into PostgreSQL.
+- Building SQL views for business analytics.
+- Exploring business KPIs through an interactive dashboard.
+- Testing pipeline components with Pytest.
 
 ## Architecture
 
 ```text
-Remotive API
-     |
-     v
-  Extraction
-     |
-     v
-  Raw JSON Data
-     |
-     v
- Transformation
-     |
-     v
-  Cleaned CSV
-     |
-     v
- Data Validation
-     |
-     v
-  PostgreSQL
+Olist Raw CSV Files
+        |
+        v
+Data Ingestion
+        |
+        v
+Data Cleaning & Transformation
+        |
+        v
+Processed CSV Files
+        |
+        v
+PostgreSQL Database
+        |
+        v
+Analytical SQL Views
+        |
+        v
+Streamlit Dashboard
 ```
 
-## Technologies Used
+## Dataset
 
-- **Python** – Main programming language.
-- **Requests** – API integration and data extraction.
-- **Pandas** – Data cleaning and transformation.
-- **BeautifulSoup4** – HTML content cleaning.
-- **PostgreSQL** – Relational database storage.
-- **SQLAlchemy** – Database connectivity and operations.
-- **Pytest** – Testing framework.
-- **Git & GitHub** – Version control.
+The project uses the Brazilian E-Commerce Public Dataset by Olist.
+
+It contains information about customers, orders, products, sellers, payments, reviews, geolocation, and product categories.
+
+The pipeline uses nine CSV datasets:
+
+- olist_customers_dataset.csv
+- olist_geolocation_dataset.csv
+- olist_order_items_dataset.csv
+- olist_order_payments_dataset.csv
+- olist_order_reviews_dataset.csv
+- olist_orders_dataset.csv
+- olist_products_dataset.csv
+- olist_sellers_dataset.csv
+- product_category_name_translation.csv
+
+Place the downloaded CSV files in:
+
+```text
+data/raw/olist/
+```
+
+## Technologies
+
+- Python
+- Pandas
+- PostgreSQL
+- SQLAlchemy
+- Psycopg2
+- Streamlit
+- Plotly
+- Pytest
+- Git & GitHub
 
 ## Project Structure
 
 ```text
 intelligent-data-pipeline/
-│
-├── dags/
+|
 ├── data/
 │   ├── raw/
+│   │   └── olist/
 │   └── processed/
-│
-├── docker/
-│
+|
+├── dashboard/
+│   └── olist_app.py
+|
+├── scripts/
+|
 ├── sql/
-│   └── schema.sql
-│
+│   ├── olist_schema.sql
+│   ├── olist_analytics_views.sql
+│   └── olist_category_analytics.sql
+|
 ├── src/
 │   ├── ingestion/
-│   │   └── fetch_jobs.py
-│   │
+│   │   └── read_olist.py
 │   ├── transformation/
-│   │   └── clean_jobs.py
-│   │
-│   ├── validation/
-│   │   └── quality_checks.py
-│   │
+│   │   └── clean_olist.py
 │   └── database/
 │       ├── postgres.py
-│       └── load_jobs.py
-│
+│       └── load_olist.py
+|
 ├── tests/
+│   └── test_olist_pipeline.py
+|
+├── .streamlit/
 ├── main.py
 ├── requirements.txt
-├── docker-compose.yml
-├── .env.example
+├── .gitignore
 └── README.md
 ```
 
-## ETL Workflow
-
-### 1. Extraction
-- Connects to the Remotive public API.
-- Retrieves remote job listings.
-- Saves the raw API response as a timestamped JSON file.
-
-### 2. Transformation
-- Removes HTML tags from job descriptions.
-- Selects relevant job attributes.
-- Handles missing values.
-- Removes duplicate job records.
-- Normalizes tags and publication dates.
-- Saves the cleaned data as a CSV file.
-
-### 3. Data Validation
-- Checks whether the dataset contains records.
-- Identifies duplicate job IDs.
-- Checks for missing required fields.
-- Validates URLs and publication dates.
-- Stops the pipeline if critical validation checks fail.
-
-### 4. Loading
-- Loads cleaned records into PostgreSQL.
-- Uses an UPSERT operation to handle existing records.
-- Updates existing records instead of inserting duplicates.
-
-## Installation & Setup
+## Setup
 
 ### 1. Clone the repository
 
@@ -118,9 +124,9 @@ git clone https://github.com/marwan-moahmed508/intelligent-data-pipeline.git
 cd intelligent-data-pipeline
 ```
 
-### 2. Create a virtual environment
+### 2. Create and activate a virtual environment
 
-Windows:
+Windows PowerShell:
 
 ```powershell
 py -3.13 -m venv .venv
@@ -129,8 +135,8 @@ py -3.13 -m venv .venv
 
 ### 3. Install dependencies
 
-```bash
-pip install -r requirements.txt
+```powershell
+python -m pip install -r requirements.txt
 ```
 
 ### 4. Configure environment variables
@@ -140,68 +146,86 @@ Create a `.env` file in the project root:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=remote_jobs_db
 DB_USER=postgres
 DB_PASSWORD=your_password
+OLIST_DB_NAME=olist_ecommerce_db
 ```
 
-Replace `your_password` with your PostgreSQL password.
+Replace `your_password` with your local PostgreSQL password.
 
-**Important:** Never commit your `.env` file or database credentials to GitHub.
+Never commit `.env` or database credentials to version control.
 
-### 5. Configure PostgreSQL
+### 5. Prepare PostgreSQL
 
-Create a database named:
+Create the database:
 
 ```sql
-CREATE DATABASE remote_jobs_db;
+CREATE DATABASE olist_ecommerce_db;
 ```
 
-Then execute the SQL statements in `sql/schema.sql` to create the required table.
+Apply the database schema:
 
-Make sure PostgreSQL is running before executing the pipeline.
+```powershell
+psql -U postgres -d olist_ecommerce_db -f sql/olist_schema.sql
+```
 
-## Running the Pipeline
+Make sure PostgreSQL is running before continuing.
 
-Run the complete ETL pipeline from the project root:
+### 6. Run the pipeline
 
-```bash
+After placing the nine raw CSV files in `data/raw/olist/`, run:
+
+```powershell
 python main.py
 ```
 
-The pipeline will automatically:
+The pipeline transforms the raw datasets and loads the resulting data into PostgreSQL.
 
-1. Fetch remote job listings.
-2. Save the raw JSON response.
-3. Transform and clean the data.
-4. Run data quality checks.
-5. Load the validated records into PostgreSQL.
+The database loader expects the target tables to be empty before loading.
 
-## Key Features
+### 7. Create analytical views
 
-- Modular ETL architecture.
-- REST API integration.
-- Automated data cleaning and validation.
-- PostgreSQL integration.
-- Idempotent data loading using UPSERT.
-- Environment-based database configuration.
-- Logging and error handling.
-- Timestamped raw and processed data files.
+After loading the data, execute:
 
-## Future Improvements
+```powershell
+psql -U postgres -d olist_ecommerce_db -f sql/olist_analytics_views.sql
+psql -U postgres -d olist_ecommerce_db -f sql/olist_category_analytics.sql
+```
 
-- Integrate Apache Airflow for workflow orchestration and scheduling.
-- Containerize the project using Docker.
-- Add automated unit and integration tests.
-- Increase API extraction coverage after reviewing API limits.
-- Add machine learning capabilities for job classification and skill extraction.
-- Build analytical dashboards and reporting features.
+## Run the Dashboard
 
-## Data Source
+Start the Streamlit dashboard:
 
-Job listings are retrieved from the [Remotive API](https://remotive.com/api/remote-jobs).
+```powershell
+python -m streamlit run dashboard/olist_app.py
+```
 
-This project is intended for educational and analytical purposes. Original job listing links are preserved to direct users to the source.
+The dashboard provides an interactive overview of e-commerce performance, including:
+
+- Order and sales KPIs.
+- Monthly sales trends.
+- Order status distribution.
+- Product and category performance.
+- Customer analytics.
+- Data quality indicators.
+
+## Run Tests
+
+Execute the test suite:
+
+```powershell
+python -m pytest tests -v
+```
+
+## Database
+
+The PostgreSQL database used by the project is:
+
+```text
+olist_ecommerce_db
+```
+
+It contains the nine Olist source tables and analytical SQL views.
 
 ## Author
 
@@ -210,7 +234,3 @@ This project is intended for educational and analytical purposes. Original job l
 - GitHub: [marwan-moahmed508](https://github.com/marwan-moahmed508)
 - LinkedIn: [Marwan Mohammed](https://www.linkedin.com/in/marwan-mohammed-854b23336/)
 - Portfolio: [Personal Portfolio](https://marwan-moahmed508.github.io/Marwan-Portfolio/)
-
----
-
-*Built as a practical Data Engineering project, with plans to expand into Machine Learning, Generative AI, and intelligent automation.*

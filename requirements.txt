@@ -1,7 +1,7 @@
-requests
-pandas
+﻿pandas
 python-dotenv
 pytest
-beautifulsoup4
 sqlalchemy
 psycopg2-binary
+streamlit==1.67.0
+plotly==7.1.0
