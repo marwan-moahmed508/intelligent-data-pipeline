@@ -254,6 +254,10 @@ The dashboard provides an interactive overview of e-commerce performance, includ
 - Customer analytics.
 - Data quality indicators.
 
+## Dashboard Preview
+
+![Olist E-Commerce Dashboard](assets/dashboard-preview.png)
+
 ## Data Quality & Validation
 
 The project includes data validation and inspection scripts:
