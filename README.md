@@ -4,6 +4,10 @@ An end-to-end Data Engineering project built around the Brazilian E-Commerce Pub
 
 This project demonstrates a complete data pipeline that ingests raw e-commerce data, cleans and transforms it using Python and Pandas, loads it into PostgreSQL, and delivers business insights through analytical SQL views and an interactive Streamlit dashboard.
 
+## Dashboard Preview
+
+![Olist E-Commerce Dashboard](assets/dashboard-preview.png)
+
 ## Project Overview
 
 The project processes real-world Brazilian e-commerce data and transforms it into structured, analytics-ready datasets.
