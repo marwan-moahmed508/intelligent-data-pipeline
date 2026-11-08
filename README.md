@@ -2,19 +2,21 @@
 
 An end-to-end Data Engineering project built around the Brazilian E-Commerce Public Dataset by Olist.
 
-The project processes raw e-commerce data, performs data cleaning and transformation, loads the results into PostgreSQL, and provides analytical SQL views and an interactive Streamlit dashboard.
+This project demonstrates a complete data pipeline that ingests raw e-commerce data, cleans and transforms it using Python and Pandas, loads it into PostgreSQL, and delivers business insights through analytical SQL views and an interactive Streamlit dashboard.
 
 ## Project Overview
 
-This project demonstrates a practical data engineering workflow using real-world e-commerce data.
+The project processes real-world Brazilian e-commerce data and transforms it into structured, analytics-ready datasets.
 
 The pipeline covers:
-- Reading and processing multiple CSV datasets.
-- Cleaning and transforming raw data with Pandas.
-- Loading structured data into PostgreSQL.
-- Building SQL views for business analytics.
-- Exploring business KPIs through an interactive dashboard.
-- Testing pipeline components with Pytest.
+
+- Reading nine raw CSV datasets.
+- Cleaning and transforming data with Pandas.
+- Performing data quality checks and handling date and numeric fields.
+- Loading processed datasets into PostgreSQL.
+- Creating analytical SQL views.
+- Exploring business KPIs through an interactive Streamlit dashboard.
+- Testing data pipeline components with Pytest.
 
 ## Architecture
 
@@ -42,31 +44,51 @@ Streamlit Dashboard
 
 ## Dataset
 
-The project uses the Brazilian E-Commerce Public Dataset by Olist.
+This project uses the **Brazilian E-Commerce Public Dataset by Olist**, a real-world dataset containing approximately 100,000 orders made between 2016 and 2018.
 
-It contains information about customers, orders, products, sellers, payments, reviews, geolocation, and product categories.
+**Dataset source:** [Brazilian E-Commerce Public Dataset by Olist – Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
 
-The pipeline uses nine CSV datasets:
+The dataset contains information about:
 
-- olist_customers_dataset.csv
-- olist_geolocation_dataset.csv
-- olist_order_items_dataset.csv
-- olist_order_payments_dataset.csv
-- olist_order_reviews_dataset.csv
-- olist_orders_dataset.csv
-- olist_products_dataset.csv
-- olist_sellers_dataset.csv
-- product_category_name_translation.csv
+- Customers and customer locations.
+- Orders and order status.
+- Products and product categories.
+- Sellers.
+- Payments.
+- Customer reviews.
+- Geolocation data.
 
-Place the downloaded CSV files in:
+### Required CSV Files
+
+The pipeline uses the following nine CSV files:
+
+1. `olist_customers_dataset.csv`
+2. `olist_geolocation_dataset.csv`
+3. `olist_order_items_dataset.csv`
+4. `olist_order_payments_dataset.csv`
+5. `olist_order_reviews_dataset.csv`
+6. `olist_orders_dataset.csv`
+7. `olist_products_dataset.csv`
+8. `olist_sellers_dataset.csv`
+9. `product_category_name_translation.csv`
+
+### Data Setup
+
+1. Download the dataset from the Kaggle link above.
+2. Extract the downloaded archive.
+3. Create the following directory if it does not already exist:
 
 ```text
 data/raw/olist/
 ```
 
+4. Place all nine CSV files inside that directory.
+
+**Important:** Raw and processed dataset files are excluded from this GitHub repository through `.gitignore` because of their size. You must download the dataset and place the files locally before running the pipeline.
+
 ## Technologies
 
-- Python
+- Python 3.13
 - Pandas
 - PostgreSQL
 - SQLAlchemy
@@ -81,15 +103,23 @@ data/raw/olist/
 ```text
 intelligent-data-pipeline/
 |
-├── data/
-│   ├── raw/
-│   │   └── olist/
-│   └── processed/
+├── .streamlit/
+│   └── config.toml
 |
 ├── dashboard/
 │   └── olist_app.py
 |
+├── data/
+│   ├── raw/
+│   │   └── olist/
+│   └── processed/
+│       └── olist/
+|
 ├── scripts/
+│   ├── export_date_anomalies.py
+│   ├── inspect_anomalies.py
+│   ├── inspect_olist.py
+│   └── validate_olist.py
 |
 ├── sql/
 │   ├── olist_schema.sql
@@ -99,8 +129,10 @@ intelligent-data-pipeline/
 ├── src/
 │   ├── ingestion/
 │   │   └── read_olist.py
+│   │
 │   ├── transformation/
 │   │   └── clean_olist.py
+│   │
 │   └── database/
 │       ├── postgres.py
 │       └── load_olist.py
@@ -108,38 +140,40 @@ intelligent-data-pipeline/
 ├── tests/
 │   └── test_olist_pipeline.py
 |
-├── .streamlit/
 ├── main.py
 ├── requirements.txt
 ├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
 ## Setup
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
-```bash
+```powershell
 git clone https://github.com/marwan-moahmed508/intelligent-data-pipeline.git
+
 cd intelligent-data-pipeline
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create and Activate a Virtual Environment
 
 Windows PowerShell:
 
 ```powershell
 py -3.13 -m venv .venv
+
 .venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+### 4. Configure Environment Variables
 
 Create a `.env` file in the project root:
 
@@ -153,11 +187,13 @@ OLIST_DB_NAME=olist_ecommerce_db
 
 Replace `your_password` with your local PostgreSQL password.
 
-Never commit `.env` or database credentials to version control.
+**Security:** Never commit `.env` or database credentials to version control.
 
 ### 5. Prepare PostgreSQL
 
-Create the database:
+Make sure PostgreSQL is installed and running.
+
+Create the project database:
 
 ```sql
 CREATE DATABASE olist_ecommerce_db;
@@ -169,32 +205,40 @@ Apply the database schema:
 psql -U postgres -d olist_ecommerce_db -f sql/olist_schema.sql
 ```
 
-Make sure PostgreSQL is running before continuing.
+The database schema must be created before running the pipeline.
 
-### 6. Run the pipeline
+### 6. Run the Data Pipeline
 
-After placing the nine raw CSV files in `data/raw/olist/`, run:
+After placing all nine raw CSV files in `data/raw/olist/`, execute:
 
 ```powershell
 python main.py
 ```
 
-The pipeline transforms the raw datasets and loads the resulting data into PostgreSQL.
+The pipeline performs the following operations:
 
-The database loader expects the target tables to be empty before loading.
+1. Reads the raw Olist datasets.
+2. Cleans and transforms the data.
+3. Saves processed CSV files.
+4. Loads the processed datasets into PostgreSQL.
 
-### 7. Create analytical views
+**Important:** The database loader expects the target tables to be empty before loading. Do not run the loading pipeline again against already populated tables without preparing an appropriate reload procedure.
 
-After loading the data, execute:
+### 7. Create Analytical SQL Views
+
+After the data has been successfully loaded, execute:
 
 ```powershell
 psql -U postgres -d olist_ecommerce_db -f sql/olist_analytics_views.sql
+
 psql -U postgres -d olist_ecommerce_db -f sql/olist_category_analytics.sql
 ```
 
+These SQL scripts create analytical views for business reporting and dashboard analysis.
+
 ## Run the Dashboard
 
-Start the Streamlit dashboard:
+Start the interactive Streamlit dashboard:
 
 ```powershell
 python -m streamlit run dashboard/olist_app.py
@@ -205,9 +249,19 @@ The dashboard provides an interactive overview of e-commerce performance, includ
 - Order and sales KPIs.
 - Monthly sales trends.
 - Order status distribution.
-- Product and category performance.
+- Product performance.
+- Category performance.
 - Customer analytics.
 - Data quality indicators.
+
+## Data Quality & Validation
+
+The project includes data validation and inspection scripts:
+
+- `inspect_olist.py` – Inspects Olist datasets.
+- `validate_olist.py` – Performs dataset validation.
+- `inspect_anomalies.py` – Inspects detected date anomalies.
+- `export_date_anomalies.py` – Exports date anomaly reports.
 
 ## Run Tests
 
@@ -217,15 +271,24 @@ Execute the test suite:
 python -m pytest tests -v
 ```
 
+The tests cover:
+
+- Processed and raw row-count consistency.
+- Primary key uniqueness.
+- Composite key uniqueness.
+- Referential integrity between datasets.
+- Order date quality flags.
+- Product category translation.
+
 ## Database
 
-The PostgreSQL database used by the project is:
+The PostgreSQL database used by this project is:
 
 ```text
 olist_ecommerce_db
 ```
 
-It contains the nine Olist source tables and analytical SQL views.
+It contains nine Olist source tables and analytical SQL views for business intelligence and reporting.
 
 ## Author
 
